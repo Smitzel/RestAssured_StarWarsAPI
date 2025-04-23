@@ -6,8 +6,8 @@ import org.junit.BeforeClass;
 public class TestConfigStarWarsApi {
     @BeforeClass
     public static void setup() {
-        RestAssured.baseURI = "https://swapi.dev/api/";
-        RestAssured.basePath = "/api/";
+        RestAssured.baseURI = "https://swapi.tech/api/";
+//        RestAssured.basePath = "/api/";
 
     }
 }

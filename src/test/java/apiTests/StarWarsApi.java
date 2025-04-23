@@ -3,13 +3,13 @@ package apiTests;
 import config.TestConfigStarWarsApi;
 import io.restassured.module.jsv.JsonSchemaValidator;
 import io.restassured.response.Response;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class StarWarsApi extends TestConfigStarWarsApi {
@@ -50,26 +50,28 @@ public class StarWarsApi extends TestConfigStarWarsApi {
                 .get(baseURI + "films/")
                 .then()
 //                    .log().all()
-                .assertThat().body("results.title[0]", equalTo("A New Hope"));
+                .assertThat().body("result.properties.title[0]", equalTo("A New Hope"));
 
     }
 
     @Test()
     public void getFilmIdAndName() {
-        String episodeId = get(baseURI + "films/").jsonPath().getString("results.episode_id[3]");
+        String episodeId = get(baseURI + "films/").jsonPath().getString("result.properties.episode_id[2]");
         System.out.println(episodeId);
 
-        String episodeName = get(baseURI + "films/" + episodeId).jsonPath().getString("title");
-        Assert.assertEquals(episodeName, "A New Hope");
+        String episodeName = get(baseURI + "films/" + episodeId).jsonPath().getString("result.properties.title");
+        assertEquals(episodeName, "Revenge of the Sith");
         System.out.println(episodeName);
-
     }
 
     @Test()
     public void getCountFilms() {
-        get(baseURI + "films/")
+        Response response = get(baseURI + "films/")
                 .then()
-                .body("count", equalTo(6));
+                .extract().response();
+
+        int titleCount = response.jsonPath().getList("result.properties.title").size();
+        assertEquals(titleCount, 6);
     }
 
     @Test()

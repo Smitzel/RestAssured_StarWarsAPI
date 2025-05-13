@@ -1,9 +1,9 @@
-package apiTests;
+package apitests;
 
 import config.TestConfigStarWarsApi;
 import io.restassured.module.jsv.JsonSchemaValidator;
 import io.restassured.response.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class StarWarsApi extends TestConfigStarWarsApi {
+public class StarWarsApiTest extends TestConfigStarWarsApi {
 
     @Test()
     public void printStatusCode() {
@@ -60,7 +60,7 @@ public class StarWarsApi extends TestConfigStarWarsApi {
         System.out.println(episodeId);
 
         String episodeName = get(baseURI + "films/" + episodeId).jsonPath().getString("result.properties.title");
-        assertEquals(episodeName, "Revenge of the Sith");
+        assertEquals("Revenge of the Sith", episodeName);
         System.out.println(episodeName);
     }
 
@@ -71,7 +71,7 @@ public class StarWarsApi extends TestConfigStarWarsApi {
                 .extract().response();
 
         int titleCount = response.jsonPath().getList("result.properties.title").size();
-        assertEquals(titleCount, 6);
+        assertEquals(6, titleCount);
     }
 
     @Test()

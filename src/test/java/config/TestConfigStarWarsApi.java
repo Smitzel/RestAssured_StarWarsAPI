@@ -1,10 +1,11 @@
 package config;
 
 import io.restassured.RestAssured;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+
 
 public class TestConfigStarWarsApi {
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         RestAssured.baseURI = "https://swapi.tech/api/";
 //        RestAssured.basePath = "/api/";

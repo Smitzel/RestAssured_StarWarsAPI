@@ -1,4 +1,4 @@
-name: Java CI with Allure
+name: Java CI with Allure and Pages
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-and-deploy:
 
     runs-on: ubuntu-latest
 
@@ -27,8 +27,9 @@ jobs:
       - name: Generate Allure report
         run: mvn allure:report
 
-      - name: Upload Allure report as artifact
-        uses: actions/upload-artifact@v4
+      - name: Deploy Allure report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: allure-report
-          path: target/site/allure-maven-plugin
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: target/site/allure-maven-plugin
+          publish_branch: gh-pages

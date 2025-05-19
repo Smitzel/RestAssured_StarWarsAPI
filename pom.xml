@@ -18,7 +18,7 @@
         <json-schema-validator.version>4.5.0</json-schema-validator.version>
         <json-simple.version>1.1.1</json-simple.version>
         <datafaker.version>2.4.3</datafaker.version>
-        <json.version>20250107</json.version>
+        <json.version>20250517</json.version>
     </properties>
 
     <dependencyManagement>

@@ -27,25 +27,32 @@ jobs:
           mvn test 2>&1 | tee test-output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post PR Comment
-        run: npx github-actions-ctrf ctrf-report.json --pr-comment
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment test results on PR
+      - name: Comment test summary on PR
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const output = fs.readFileSync('test-output.txt', 'utf8');
-            const truncated = output.length > 65000 ? output.slice(-65000) : output;
-            const statusEmoji = `${{ steps.run-tests.outputs.exitcode }}` === '0' ? '✅' : '❌';
+            
+            // Search for the last line that matches the summary pattern
+            const summaryRegex = /Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+),\s*Skipped:\s*(\d+)/g;
+            let match, lastMatch;
+            while ((match = summaryRegex.exec(output)) !== null) {
+              lastMatch = match;
+            }
+            
+            let summary = '⚠️ Test summary not found.';
+            if (lastMatch) {
+              const [, run, failures, errors, skipped] = lastMatch;
+              const failedCount = parseInt(failures) + parseInt(errors);
+              const statusEmoji = failedCount === 0 ? '✅' : '❌';
+              summary = `${statusEmoji} *Tests run: ${run}, Failed: ${failures}, Errors: ${errors}, Skipped: ${skipped}*`;
+            }
             
             github.rest.issues.createComment({
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${statusEmoji} *Test results for commit \`${context.payload.pull_request.head.sha.substring(0, 7)}\`*\n\n\`\`\`\n${truncated}\n\`\`\``
+              body: summary
             });

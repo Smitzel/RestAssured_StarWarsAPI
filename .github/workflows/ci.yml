@@ -27,6 +27,12 @@ jobs:
           mvn test 2>&1 | tee test-output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
+      - name: Post PR Comment
+        run: npx github-actions-ctrf ctrf-report.json --pr-comment
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Comment test results on PR
         uses: actions/github-script@v7
         with:

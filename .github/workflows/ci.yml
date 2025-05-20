@@ -20,15 +20,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Run tests and capture output
+      - name: Run tests and save output to file
         id: run-tests
         run: |
           set +e
-          OUTPUT=$(mvn test 2>&1)
-          echo "$OUTPUT"
-          echo "output<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          mvn test 2>&1 | tee test-output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Comment test results on PR
@@ -36,9 +32,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `${{ steps.run-tests.outputs.output }}`;
-            const statusEmoji = `${{ steps.run-tests.outputs.exitcode }}` === '0' ? '✅' : '❌';
+            const fs = require('fs');
+            const output = fs.readFileSync('test-output.txt', 'utf8');
             const truncated = output.length > 65000 ? output.slice(-65000) : output;
+            const statusEmoji = `${{ steps.run-tests.outputs.exitcode }}` === '0' ? '✅' : '❌';
             
             github.rest.issues.createComment({
               issue_number: context.payload.pull_request.number,

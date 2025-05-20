@@ -24,7 +24,7 @@ jobs:
         id: run-tests
         run: |
           set +e
-          OUTPUT=$(./mvnw test 2>&1)
+          OUTPUT=$(mvn test 2>&1)
           echo "$OUTPUT"
           echo "output<<EOF" >> $GITHUB_OUTPUT
           echo "$OUTPUT" >> $GITHUB_OUTPUT

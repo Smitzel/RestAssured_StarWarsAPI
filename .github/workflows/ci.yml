@@ -1,10 +1,7 @@
-name: Run Tests on PR and After Merge
+name: Run Tests and Comment on PR
 
 on:
-  pull_request:        # Run this workflow for pull request events (open, update, etc.)
-  push:
-    branches:
-      - main           # Also run this workflow when changes are pushed to the main branch
+  pull_request:  # Run this workflow when a pull request is opened or updated
 
 jobs:
   test:
@@ -21,37 +18,28 @@ jobs:
           java-version: '17'
 
       - name: Run tests and save output
+        id: run-tests
         run: |
+          set +e  # Allow test failures to continue the workflow
           ./mvnw test > test-output.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Upload test output as artifact
-        if: always()  # Always upload even if tests fail
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-output
-          path: test-output.txt
-
-      # Only for push to main: find the related PR that was merged
-      - name: Find related pull request
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        id: find_pr
-        uses: jwalton/gh-find-current-pr@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Post test results as a comment on the related pull request
-      - name: Post test results to pull request
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.find_pr.outputs.number != ''
+      - name: Create comment with test output
         uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const output = fs.readFileSync('test-output.txt', 'utf8');
             const truncated = output.length > 65000 ? output.slice(-65000) : output; // GitHub comment limit
+            
+            const prNumber = context.payload.pull_request.number;
+            const statusEmoji = ${{ steps.run-tests.outputs.exitcode }} === '0' ? '✅' : '❌';
+            
             github.rest.issues.createComment({
-              issue_number: Number('${{ steps.find_pr.outputs.number }}'),
+              issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✅ *Tests ran after merging into \`main\`*\n\n\`\`\`\n${truncated}\n\`\`\``
+              body: `${statusEmoji} *Test results for commit \`${context.payload.pull_request.head.sha.substring(0, 7)}\`*\n\n\`\`\`\n${truncated}\n\`\`\``
             });

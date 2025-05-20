@@ -1,17 +1,20 @@
-name: Run Tests and Comment on PR
+name: Run Tests on PR and After Merge
 
 on:
-  pull_request:
+  pull_request:         # Run on pull request events
+  push:
+    branches:
+      - master          # Run again after PR is merged into 'master'
 
 permissions:
-  pull-requests: write  # Required to comment on the pull request
+  pull-requests: write  # Needed to comment on the pull request
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Java
@@ -20,14 +23,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Run tests and save output to file
+      - name: Run tests and save output
         id: run-tests
         run: |
           set +e
           mvn test 2>&1 | tee test-output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Comment test summary on PR
+      - name: Post test summary as PR comment
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -35,13 +39,12 @@ jobs:
             const fs = require('fs');
             const output = fs.readFileSync('test-output.txt', 'utf8');
             
-            // Search for the last line that matches the summary pattern
             const summaryRegex = /Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+),\s*Skipped:\s*(\d+)/g;
             let match, lastMatch;
             while ((match = summaryRegex.exec(output)) !== null) {
               lastMatch = match;
             }
-            
+
             let summary = '⚠️ Test summary not found.';
             if (lastMatch) {
               const [, run, failures, errors, skipped] = lastMatch;
@@ -49,7 +52,7 @@ jobs:
               const statusEmoji = failedCount === 0 ? '✅' : '❌';
               summary = `${statusEmoji} *Tests run: ${run}, Failed: ${failures}, Errors: ${errors}, Skipped: ${skipped}*`;
             }
-            
+
             github.rest.issues.createComment({
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,

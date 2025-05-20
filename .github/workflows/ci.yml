@@ -1,35 +1,57 @@
-name: Java CI with Allure and Pages
+name: Run Tests on PR and After Merge
 
 on:
+  pull_request:        # Run this workflow for pull request events (open, update, etc.)
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - main           # Also run this workflow when changes are pushed to the main branch
 
 jobs:
-  build-and-deploy:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build and test with Maven
-        run: mvn clean verify
+      - name: Run tests and save output
+        run: |
+          ./mvnw test > test-output.txt
 
-      - name: Generate Allure report
-        run: mvn allure:report
-
-      - name: Deploy Allure report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload test output as artifact
+        if: always()  # Always upload even if tests fail
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/site/allure-maven-plugin
-          publish_branch: gh-pages
+          name: test-output
+          path: test-output.txt
+
+      # Only for push to main: find the related PR that was merged
+      - name: Find related pull request
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: find_pr
+        uses: jwalton/gh-find-current-pr@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Post test results as a comment on the related pull request
+      - name: Post test results to pull request
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.find_pr.outputs.number != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('test-output.txt', 'utf8');
+            const truncated = output.length > 65000 ? output.slice(-65000) : output; // GitHub comment limit
+            github.rest.issues.createComment({
+              issue_number: Number('${{ steps.find_pr.outputs.number }}'),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ *Tests ran after merging into \`main\`*\n\n\`\`\`\n${truncated}\n\`\`\``
+            });

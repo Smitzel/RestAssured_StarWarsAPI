@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <rest-assured.version>5.5.1</rest-assured.version>
+        <rest-assured.version>5.5.2</rest-assured.version>
         <junit.jupiter.version>5.12.2</junit.jupiter.version>
         <jackson-databind.version>2.13.4.1</jackson-databind.version>
         <json-schema-validator.version>4.5.0</json-schema-validator.version>

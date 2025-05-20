@@ -3,6 +3,9 @@ name: Run Tests and Comment on PR
 on:
   pull_request:  # Run this workflow when a pull request is opened or updated
 
+permissions:
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest

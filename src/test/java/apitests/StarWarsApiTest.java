@@ -54,6 +54,7 @@ public class StarWarsApiTest extends TestConfigStarWarsApi {
 
     }
 
+
     @Test()
     public void getFilmIdAndName() {
         String episodeId = get(baseURI + "films/").jsonPath().getString("result.properties.episode_id[2]");

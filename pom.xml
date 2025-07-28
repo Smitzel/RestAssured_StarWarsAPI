@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest-assured.version>5.5.5</rest-assured.version>
-        <junit.jupiter.version>5.13.3</junit.jupiter.version>
+        <junit.jupiter.version>5.13.4</junit.jupiter.version>
         <datafaker.version>2.4.4</datafaker.version>
         <json.version>20250517</json.version>
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>

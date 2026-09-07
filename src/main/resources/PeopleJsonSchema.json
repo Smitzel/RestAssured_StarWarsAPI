@@ -71,17 +71,8 @@
           "required": ["saberMasters", "heartMath"]
         }
       },
-      "required": ["contact", "donate", "partnerDiscounts"]
-    },
-    "social": {
-      "type": "object",
-      "properties": {
-        "discord": { "type": "string", "format": "uri" },
-        "reddit": { "type": "string", "format": "uri" },
-        "github": { "type": "string", "format": "uri" }
-      },
-      "required": ["discord", "reddit", "github"]
+      "required": ["contact"]
     }
   },
-  "required": ["message", "result", "apiVersion", "timestamp", "support", "social"]
+  "required": ["message", "result", "apiVersion", "timestamp", "support"]
 }

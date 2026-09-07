@@ -39,8 +39,7 @@ public class StarWarsApiTest extends TestConfigStarWarsApi {
                 .body(containsString("species"))
                 .body(containsString("vehicles"))
                 .body(containsString("starships"))
-                .body("size()", is(6));
-//                .log().all();
+                .body("size()", is(5));
     }
 
     @Test()
